@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Didox — lokal demo</title>
+  <style>
+    :root { --brand: #0b5cff; --ink: #0f172a; --muted: #64748b; --line: #e2e8f0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; background: #f4f7fc; color: var(--ink); }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 14px 28px; background: #fff; border-bottom: 1px solid var(--line); }
+    .logo { font-weight: 700; font-size: 20px; color: var(--brand); letter-spacing: -0.3px; }
+    .badge { font-size: 12px; padding: 4px 9px; border-radius: 999px; background: #eef4ff; color: var(--brand); }
+    main { max-width: 860px; margin: 32px auto; padding: 0 20px; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 26px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06); }
+    h1 { font-size: 22px; margin: 0 0 6px; }
+    p.sub { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
+    button { font: inherit; cursor: pointer; border-radius: 9px; border: 1px solid var(--line); background: #fff; padding: 10px 16px; }
+    button.primary { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 600; }
+    button.primary:hover { filter: brightness(1.05); }
+    .row { display: flex; gap: 10px; align-items: center; }
+    .login-panel { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+    .modal-back { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); display: none; align-items: center; justify-content: center; }
+    .modal-back.open { display: flex; }
+    .modal { background: #fff; border-radius: 14px; width: 420px; padding: 22px; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25); }
+    .modal h2 { font-size: 17px; margin: 0 0 4px; }
+    .keys { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+    .key-item { text-align: left; display: block; width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: #f8fafc; }
+    .key-item.selected { border-color: var(--brand); background: #eef4ff; }
+    .key-item small { display: block; color: var(--muted); margin-top: 2px; }
+    input { font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; width: 100%; }
+    label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 6px; }
+    .field { margin-bottom: 14px; }
+    select { font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; width: 100%; background: #fff; }
+    nav.tabs { display: flex; gap: 4px; margin-bottom: 18px; }
+    nav.tabs a { text-decoration: none; color: var(--muted); padding: 8px 14px; border-radius: 8px; font-size: 14px; }
+    nav.tabs a.active { background: #eef4ff; color: var(--brand); font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 16px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; }
+    .hidden { display: none !important; }
+    .toast { position: fixed; right: 22px; bottom: 22px; background: #0f172a; color: #fff; padding: 12px 16px; border-radius: 10px; font-size: 14px; display: none; }
+    .toast.show { display: block; }
+    .captcha-box { margin-top: 10px; padding: 12px; border: 1px dashed #f59e0b; border-radius: 10px; background: #fffbeb; font-size: 13px; color: #92400e; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="logo">didox</span>
+    <span class="badge">Lokal demo — real Didox emas</span>
+  </header>
+  <main>
+    <section id="login-view" class="card">
+      <h1>Tizimga kirish</h1>
+      <p class="sub">Hujjatlarni ko‘rish va qoralama yaratish uchun E-IMZO kaliti bilan kiring.</p>
+      <div class="login-panel">
+        <button id="eimzo-open" class="primary" type="button">E-IMZO bilan kirish</button>
+        <span style="font-size: 12.5px; color: var(--muted)">Kalit va parol faqat E-IMZO oynasida kiritiladi.</span>
+      </div>
+    </section>
+
+    <section id="app-view" class="card hidden">
+      <nav class="tabs">
+        <a href="/documents" id="documents-tab">Hujjatlar</a>
+        <a href="/contracts">Shartnomalar</a>
+      </nav>
+      <h1>Hujjatlar</h1>
+      <p class="sub">Noyabr 2026 — schyot-fakturalar.</p>
+
+      <div id="documents-list">
+        <div class="row" style="justify-content: space-between">
+          <span style="font-size: 14px">Yangi schyot-faktura yaratish</span>
+          <button id="new-doc" class="primary" type="button">Yangi hujjat</button>
+        </div>
+      </div>
+
+      <form id="doc-form" class="hidden" style="margin-top: 18px">
+        <div class="field">
+          <label for="summa">Summa (so‘m)</label>
+          <input id="summa" name="summa" inputmode="numeric" placeholder="Masalan: 1250000" />
+        </div>
+        <div class="field">
+          <label for="doc-type">Hujjat turi</label>
+          <select id="doc-type" name="doc_type">
+            <option value="invoice">Schyot-faktura</option>
+            <option value="act">Akt</option>
+          </select>
+        </div>
+        <div class="row">
+          <button type="button" data-action="save-draft" class="primary">Qoralamani saqlash</button>
+          <button type="reset">Tozalash</button>
+        </div>
+      </form>
+
+      <table id="docs-table">
+        <thead>
+          <tr><th>№</th><th>Hujjat</th><th>Summa</th><th>Holat</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <div class="modal-back" id="eimzo-modal">
+    <div class="modal">
+      <h2>E-IMZO kalitini tanlang</h2>
+      <p class="sub" style="margin-bottom: 0">Bir martalik parolni kiriting — kalit kompyuterdan chiqmaydi.</p>
+      <div class="keys">
+        <button type="button" class="key-item" data-key-id="demo-key">
+          Demo MCHJ rahbari
+          <small>ERI kaliti · amal qiladi</small>
+        </button>
+      </div>
+      <div class="field">
+        <label for="eri-password">Kalit paroli</label>
+        <input id="eri-password" type="password" autocomplete="off" placeholder="ERI paroli" />
+      </div>
+      <div class="row" style="justify-content: flex-end">
+        <button type="button" id="eimzo-cancel">Bekor qilish</button>
+        <button type="button" id="eimzo-confirm" class="primary">Tasdiqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const loginView = document.getElementById('login-view');
+    const appView = document.getElementById('app-view');
+    const modal = document.getElementById('eimzo-modal');
+    const toast = document.getElementById('toast');
+    const docsTableBody = document.querySelector('#docs-table tbody');
+    let rowCount = 0;
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    document.getElementById('eimzo-open').addEventListener('click', () => {
+      document.querySelectorAll('.key-item').forEach((item) => item.classList.remove('selected'));
+      document.getElementById('eri-password').value = '';
+      modal.classList.add('open');
+    });
+
+    document.querySelectorAll('.key-item').forEach((item) => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.key-item').forEach((node) => node.classList.remove('selected'));
+        item.classList.add('selected');
+      });
+    });
+
+    document.getElementById('eimzo-cancel').addEventListener('click', () => modal.classList.remove('open'));
+
+    document.getElementById('eimzo-confirm').addEventListener('click', () => {
+      const key = document.querySelector('.key-item.selected');
+      const password = document.getElementById('eri-password').value;
+      if (!key) { showToast('Kalitni tanlang'); return; }
+      if (!password) { showToast('Parolni kiriting'); return; }
+      modal.classList.remove('open');
+      loginView.classList.add('hidden');
+      appView.classList.remove('hidden');
+      showToast('E-IMZO orqali kirdingiz');
+    });
+
+    document.getElementById('documents-tab').addEventListener('click', (event) => {
+      event.preventDefault();
+      document.getElementById('documents-list').classList.remove('hidden');
+      document.getElementById('doc-form').classList.add('hidden');
+      showToast('Hujjatlar bo‘limi');
+    });
+
+    document.getElementById('new-doc').addEventListener('click', () => {
+      document.getElementById('doc-form').classList.remove('hidden');
+    });
+
+    document.querySelector('[data-action="save-draft"]').addEventListener('click', () => {
+      const summa = document.getElementById('summa').value.trim();
+      if (!summa) { showToast('Summani kiriting'); return; }
+      rowCount += 1;
+      const row = document.createElement('tr');
+      row.innerHTML = '<td>' + rowCount + '</td><td>Schyot-faktura №' + rowCount + '</td><td>' + Number(summa).toLocaleString('ru-RU') + '</td><td><span style="color:#0f7a48;font-weight:600">Қоралама</span></td>';
+      docsTableBody.appendChild(row);
+      showToast('Qoralama saqlandi');
+    });
+
+    if (location.search.includes('captcha=1')) {
+      document.getElementById('eimzo-confirm').addEventListener('click', () => {
+        const box = document.createElement('div');
+        box.className = 'captcha-box';
+        box.textContent = 'Xavfsizlik tekshiruvi: rasmda ko‘rsatilgan kodni kiriting (demo) — 4 7 1 2';
+        modal.querySelector('.modal').appendChild(box);
+      }, { once: true });
+    }
+  </script>
+</body>
+</html>

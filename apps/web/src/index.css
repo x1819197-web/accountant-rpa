@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #f5f7fb;
+  --color-surface: #ffffff;
+  --color-foreground: #0f172a;
+  --color-muted: #5b6b81;
+  --color-subtle: #8a99ad;
+  --color-border: #e3e9f1;
+  --color-line: #eef2f7;
+  --color-primary: #1e40af;
+  --color-primary-hover: #1a3796;
+  --color-primary-soft: #eef3ff;
+  --color-success: #047857;
+  --color-success-soft: #ecfdf5;
+  --color-warn: #b45309;
+  --color-warn-soft: #fff8eb;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fef2f2;
+  --color-info: #0369a1;
+  --color-info-soft: #f0f9ff;
+
+  --font-sans: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Fira Code", ui-monospace, "Cascadia Mono", monospace;
+
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-pop: 0 18px 40px -12px rgba(15, 23, 42, 0.25);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 14px;
+  }
+  ::selection {
+    background: #dbe6ff;
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-left {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.anim-fade { animation: fade-in 0.18s ease-out; }
+.anim-up { animation: slide-up 0.22s ease-out; }
+.anim-left { animation: slide-left 0.24s ease-out; }
+.pulse-dot { animation: pulse-soft 1.6s ease-in-out infinite; }
+
+.scroll-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: #d3dce8; border-radius: 8px; }
+.scroll-thin::-webkit-scrollbar-track { background: transparent; }

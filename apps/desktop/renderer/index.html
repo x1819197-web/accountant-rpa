@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="uz">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Buxgalter RPA — Desktop robot</title>
+    <style>
+      :root {
+        --bg: #f5f7fb;
+        --surface: #ffffff;
+        --ink: #0f172a;
+        --muted: #5b6b81;
+        --subtle: #8a99ad;
+        --border: #e3e9f1;
+        --line: #eef2f7;
+        --primary: #1e40af;
+        --primary-hover: #1a3796;
+        --primary-soft: #eef3ff;
+        --success: #047857;
+        --success-soft: #ecfdf5;
+        --warn: #b45309;
+        --warn-soft: #fff8eb;
+        --danger: #b91c1c;
+        --danger-soft: #fef2f2;
+        --mono: "Fira Code", ui-monospace, "Cascadia Mono", Consolas, monospace;
+        --shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+        --shadow-pop: 0 18px 40px -12px rgba(15, 23, 42, 0.25);
+      }
+      * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Fira Sans", "Segoe UI", system-ui, sans-serif;
+        font-size: 13.5px;
+        -webkit-font-smoothing: antialiased;
+        display: flex;
+        flex-direction: column;
+      }
+      button, input, select { font: inherit; color: inherit; }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 20px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+      }
+      .brand { display: flex; align-items: center; gap: 10px; }
+      .mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: linear-gradient(140deg, #1e40af, #0f766e);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 0.02em;
+      }
+      .brand-name { margin: 0; font-weight: 600; font-size: 15px; }
+      .brand-sub { margin: 1px 0 0; color: var(--subtle); font-size: 12px; }
+      .top-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 12.5px;
+        color: var(--muted);
+        background: var(--bg);
+      }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: #c3ccd9; }
+      .dot.ok { background: var(--success); }
+      .dot.warn { background: var(--warn); }
+      .dot.err { background: var(--danger); }
+      .dot.pulse { animation: pulse 1.6s ease-in-out infinite; }
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+      main {
+        flex: 1;
+        overflow: auto;
+        padding: 18px 20px 28px;
+        display: grid;
+        grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+      .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 16px;
+      }
+      .card h2 { margin: 0; font-size: 14px; font-weight: 600; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+      .hint { margin: 6px 0 0; color: var(--subtle); font-size: 11.5px; line-height: 1.5; }
+      label { display: block; margin-bottom: 10px; }
+      label > span {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: var(--muted);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+      input, select {
+        width: 100%;
+        height: 36px;
+        padding: 0 10px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface);
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      input:focus, select:focus { border-color: #9db2df; box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1); }
+      input::placeholder { color: #a9b5c6; }
+      .row { display: flex; gap: 8px; align-items: center; }
+      .row > * { flex: 0 0 auto; }
+      .row > .grow { flex: 1 1 auto; min-width: 0; }
+
+      button {
+        height: 36px;
+        padding: 0 14px;
+        border-radius: 9px;
+        border: 1px solid transparent;
+        background: var(--surface);
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: background 0.15s, border-color 0.15s, transform 0.05s;
+        white-space: nowrap;
+      }
+      button:active { transform: translateY(1px); }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      .primary { background: var(--primary); color: #fff; }
+      .primary:hover:not(:disabled) { background: var(--primary-hover); }
+      .ghost { border-color: var(--border); color: var(--muted); background: var(--surface); }
+      .ghost:hover:not(:disabled) { background: var(--bg); }
+      .danger { border-color: #f1c8c8; color: var(--danger); background: var(--danger-soft); }
+      .wide { width: 100%; }
+      .big { height: 42px; font-size: 13.5px; }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 22px;
+        padding: 0 9px;
+        border-radius: 999px;
+        font-size: 11.5px;
+        font-weight: 600;
+        background: var(--bg);
+        color: var(--muted);
+        border: 1px solid var(--border);
+      }
+      .badge.ok { background: var(--success-soft); color: var(--success); border-color: #c9efe1; }
+      .badge.warn { background: var(--warn-soft); color: var(--warn); border-color: #f3e2c4; }
+      .badge.err { background: var(--danger-soft); color: var(--danger); border-color: #f5d2d2; }
+      .badge.blue { background: var(--primary-soft); color: var(--primary); border-color: #d6e2ff; }
+
+      .job {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 11px 12px;
+        background: #fbfcfe;
+        margin-bottom: 12px;
+      }
+      .job-title { margin: 0; font-weight: 600; }
+      .job-sub { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+      .job-step { margin: 8px 0 0; font-size: 12px; color: var(--primary); font-family: var(--mono); word-break: break-word; }
+
+      .manual {
+        border: 1px solid #f3d7ae;
+        background: var(--warn-soft);
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      .manual-title { margin: 0; font-weight: 700; color: var(--warn); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+      .manual p { margin: 5px 0 10px; font-size: 12.5px; line-height: 1.5; }
+
+      .log {
+        margin-top: 8px;
+        height: 210px;
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fbfcfe;
+        padding: 8px 10px;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        line-height: 1.65;
+      }
+      .log-row { display: flex; gap: 8px; }
+      .log-time { color: #a3aec0; flex: 0 0 auto; }
+      .log-msg { word-break: break-word; }
+      .log-row.warn .log-msg { color: var(--warn); }
+      .log-row.error .log-msg { color: var(--danger); }
+      .log-empty { color: var(--subtle); font-style: italic; }
+
+      .rec-status {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 12.5px;
+        border: 1px solid #dbe6ff;
+      }
+      .rec-status .dot { background: var(--primary); }
+
+      .tabs { display: flex; gap: 6px; margin: 14px 0 12px; padding: 3px; background: var(--bg); border-radius: 10px; width: fit-content; }
+      .tabs button { height: 30px; border-radius: 7px; background: transparent; color: var(--muted); font-size: 12.5px; }
+      .tabs button.active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); border-color: var(--border); }
+
+      .steps-head { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 8px; }
+      .steps-head p { margin: 0; font-size: 12.5px; color: var(--muted); }
+      .steps-head b { color: var(--ink); }
+      .steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        max-height: 260px;
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fbfcfe;
+      }
+      .steps li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--line);
+        font-size: 12.5px;
+      }
+      .steps li:last-child { border-bottom: none; }
+      .step-index { color: var(--subtle); font-family: var(--mono); font-size: 11px; flex: 0 0 20px; text-align: right; padding-top: 1px; }
+      .step-body { min-width: 0; flex: 1; }
+      .step-desc { font-weight: 500; word-break: break-word; }
+      .step-meta { margin-top: 2px; font-family: var(--mono); font-size: 11px; color: var(--subtle); word-break: break-all; }
+      .step-type {
+        flex: 0 0 auto;
+        height: 20px;
+        padding: 0 7px;
+        border-radius: 6px;
+        background: var(--bg);
+        color: var(--muted);
+        font-size: 10.5px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--border);
+      }
+      .step-type.secret { background: var(--warn-soft); color: var(--warn); border-color: #f3e2c4; }
+
+      .msg { margin-top: 10px; font-size: 12.5px; padding: 9px 11px; border-radius: 9px; display: none; }
+      .msg.show { display: block; }
+      .msg.ok { background: var(--success-soft); color: var(--success); }
+      .msg.err { background: var(--danger-soft); color: var(--danger); }
+      .msg.info { background: var(--primary-soft); color: var(--primary); }
+
+      .note {
+        display: flex;
+        gap: 9px;
+        align-items: flex-start;
+        padding: 11px 13px;
+        border-radius: 11px;
+        background: #fbfcfe;
+        border: 1px dashed var(--border);
+        color: var(--muted);
+        font-size: 11.5px;
+        line-height: 1.55;
+      }
+      .note b { color: var(--ink); }
+      .spacer { flex: 1; }
+      footer { padding: 0 20px 18px; color: var(--subtle); font-size: 11px; }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-thumb { background: #d3dce8; border-radius: 8px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      @media (max-width: 900px) {
+        main { grid-template-columns: minmax(0, 1fr); }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">BR</div>
+        <div>
+          <p class="brand-name">Buxgalter RPA</p>
+          <p class="brand-sub">Desktop robot · <span id="version">v0.1.0</span></p>
+        </div>
+      </div>
+      <div class="top-status">
+        <span id="connDot" class="dot"></span>
+        <span id="connText">Ulanmagan</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="col">
+        <section class="card">
+          <div class="card-head"><h2>Ulanish</h2><span id="tokenBadge" class="badge">token yo‘q</span></div>
+          <label>
+            <span>API manzili</span>
+            <input id="apiUrl" placeholder="http://localhost:3100" autocomplete="off" spellcheck="false" />
+          </label>
+          <label>
+            <span>Robot tokeni</span>
+            <input id="robotToken" type="password" placeholder="Token kiritilmagan" autocomplete="off" spellcheck="false" />
+          </label>
+          <div class="row">
+            <button id="btnSave" class="primary grow">Saqlash va tekshirish</button>
+            <button id="btnPeek" class="ghost" title="Tokenni ko‘rsatish / yashirish">Ko‘rish</button>
+          </div>
+          <p class="hint">Token: web ilova → Sozlamalar → «Desktop robot tokeni». Token 180 kun amal qiladi.</p>
+          <div id="configMsg" class="msg"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Navbat</h2>
+            <span id="pollBadge" class="badge">To‘xtatilgan</span>
+          </div>
+          <div class="job">
+            <p id="jobName" class="job-title">Navbat kutilmoqda…</p>
+            <p id="jobSub" class="job-sub">Robot ishga tushirilganda vazifalarni avtomatik oladi.</p>
+            <p id="jobStep" class="job-step" hidden></p>
+          </div>
+          <div id="manualBox" class="manual" hidden>
+            <p class="manual-title">Qo‘l bilan amal kerak</p>
+            <p id="manualMsg"></p>
+            <div class="row">
+              <button id="btnContinue" class="primary">Davom ettirish</button>
+              <button id="btnAbort" class="danger">Bekor qilish</button>
+            </div>
+          </div>
+          <button id="btnPoll" class="primary wide big">Ishga tushirish</button>
+          <div class="steps-head"><p>Jurnal</p><span class="badge" id="logCount">0</span></div>
+          <div id="log" class="log"><p class="log-empty">Hodisalar shu yerda ko‘rinadi.</p></div>
+        </section>
+      </div>
+
+      <div class="col">
+        <section class="card">
+          <div class="card-head">
+            <h2>Yozib olish</h2>
+            <span id="recBadge" class="badge">Bo‘sh</span>
+          </div>
+          <p class="hint" style="margin: 0 0 12px">
+            Saytda amalni bir marta o‘zingiz bajaring — har bir bosish va to‘ldirish qadam sifatida yoziladi.
+            Parol va ERI paroli <b>maxfiy qadam</b> bo‘lib qoladi, qiymati faylga yozilmaydi.
+          </p>
+          <div class="row" style="align-items: flex-end">
+            <label style="flex: 1 1 130px; margin-bottom: 0">
+              <span>Platforma</span>
+              <select id="platform">
+                <option value="didox">Didox</option>
+                <option value="1c">1C</option>
+                <option value="my3">My3 Soliq</option>
+                <option value="eijara">E-ijara</option>
+                <option value="other">Boshqa</option>
+              </select>
+            </label>
+            <label style="flex: 2 1 260px; margin-bottom: 0">
+              <span>Boshlang‘ich URL</span>
+              <input id="recUrl" value="http://localhost:3100/demo/didox.html" spellcheck="false" autocomplete="off" />
+            </label>
+          </div>
+          <div class="row" style="margin-top: 12px">
+            <button id="btnRecord" class="primary">Oynani ochish va yozish</button>
+            <button id="btnStop" class="danger" hidden>Yozishni yakunlash</button>
+            <span id="recInfo" class="hint" style="margin: 0"></span>
+          </div>
+          <div id="recStatus" class="rec-status" hidden>
+            <span class="dot pulse"></span>
+            <span id="recText">Yozib olinmoqda…</span>
+          </div>
+          <div id="saveMsg" class="msg"></div>
+
+          <div id="savePanel" hidden>
+            <div class="tabs">
+              <button id="tabExisting" class="active" type="button">Mavjud scenarioga</button>
+              <button id="tabNew" type="button">Yangi scenario</button>
+            </div>
+            <div id="existingPane">
+              <label>
+                <span>Scenario</span>
+                <select id="scenarioSelect"></select>
+              </label>
+              <p class="hint" style="margin-top: -4px">Saqlash yangi versiya yaratadi — eski versiyalar tarixda qoladi.</p>
+            </div>
+            <div id="newPane" hidden>
+              <div class="row" style="align-items: flex-end">
+                <label style="flex: 1 1 220px; margin-bottom: 0">
+                  <span>Nomi</span>
+                  <input id="newName" placeholder="Masalan: Didox — hisob-faktura yuklash" />
+                </label>
+                <label style="flex: 1 1 160px; margin-bottom: 0">
+                  <span>Papka (ixtiyoriy)</span>
+                  <input id="newFolder" placeholder="Hisobotlar" />
+                </label>
+              </div>
+            </div>
+
+            <div class="steps-head">
+              <p><b id="stepsCount">0</b> qadam yozildi</p>
+              <button id="btnDiscard" class="ghost" type="button">Tozalash</button>
+            </div>
+            <ol id="stepsList" class="steps"></ol>
+            <div class="row" style="margin-top: 12px">
+              <button id="btnSaveRecording" class="primary grow">Versiya sifatida saqlash</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="note">
+          <div>
+            <b>Maxfiylik:</b> login, parol va ERI kaliti faqat shu kompyuterda saqlanadi. Robot ularni API’dan
+            shifrlangan holda oladi, ishlatib bo‘lgach xotiradan o‘chiradi. Imzolash faqat siz tasdiqlaganingizdan keyin
+            (BR-03) va dry run’dan o‘tgandan keyin (BR-04) boshlanadi.
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>Buxgalter RPA · desktop robot · <span id="configPath"></span></footer>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>

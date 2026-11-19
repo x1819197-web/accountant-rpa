@@ -14,7 +14,8 @@ Master parol talab qilinmaydi. Haqiqiy E-IMZO, .pfx va Didox/1C bilan ishlash fa
 buxgalterning Windows kompyuterida ishlaydigan desktop versiyada bo'ladi — kalitlar tarmoqqa
 chiqmaydi (BR-03, BR-08).
 
-Ish jarayoni videosi (83 s): **https://x1819197-web.github.io/accountant-rpa/buxgalter-rpa-demo.mp4**
+Ish jarayoni videosi (2 daq 35 s, o‘zbek tilida ovozli izoh bilan):
+**https://x1819197-web.github.io/accountant-rpa/buxgalter-rpa-demo.mp4**
 — yangi run yaratish, BR-03 tasdiqlash, real vaqtda ijro, scenariy tahrirlash, hisobot va jurnal.
 
 Namoyishni lokal yig'ish:
